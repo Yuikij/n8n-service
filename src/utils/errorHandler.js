@@ -232,6 +232,15 @@ function setupGracefulShutdown(server) {
       ErrorLogger.warn('Error closing HTML renderer', { error: error.message });
     }
     
+    try {
+      // 停止清理服务
+      const { cleanupService } = require('../services/cleanupService');
+      cleanupService.stop();
+      ErrorLogger.info('Cleanup service stopped');
+    } catch (error) {
+      ErrorLogger.warn('Error stopping cleanup service', { error: error.message });
+    }
+    
     server.close((err) => {
       if (err) {
         ErrorLogger.log(err);

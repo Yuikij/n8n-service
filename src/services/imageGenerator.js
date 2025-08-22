@@ -35,10 +35,10 @@ async function generatePostCards(post, options = {}) {
       timestamp = Date.now()
     } = options;
     
-    // 分页处理
+    // 分页处理 - 调整参数以适应更大的字体
     const pages = paginateContent(post, {
-      maxContentPerPage: 800,
-      maxCommentsPerPage: 3,
+      maxContentPerPage: 600,  // 减少每页字符数以适应更大字体
+      maxCommentsPerPage: 2,   // 减少每页评论数以确保完整显示
       minPages: 2,
       maxPages: 4
     });
@@ -64,8 +64,8 @@ async function generatePostCards(post, options = {}) {
         const renderer = getRenderer();
         const imageBuffer = await retryOperation(async () => {
           return await renderer.renderCard(templateName, pageData, {
-            width: 750,
-            height: 1000,
+            width: 900,
+            height: 1200,
             deviceScaleFactor: 2,
             quality: 90
           });
