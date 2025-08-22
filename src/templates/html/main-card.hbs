@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Card - {{title_zh}}</title>
+    <link rel="stylesheet" href="../css/base.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="card main-card">
+        <!-- Header -->
+        <div class="header">
+            <div class="reddit-icon">R</div>
+            <div class="header-text">
+                <div class="header-title">Reddit 高赞讨论</div>
+                <div class="header-subtitle">r/{{subreddit}}</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Title Section -->
+            <div class="title-section">
+                {{#if title_zh}}
+                <h1 class="title-chinese">{{title_zh}}</h1>
+                {{/if}}
+                {{#if title}}
+                <div class="title-original">
+                    <strong>原文标题：</strong>{{title}}
+                </div>
+                {{/if}}
+            </div>
+
+            <!-- Main Content -->
+            {{#if content_zh}}
+            <div class="main-content">
+                {{#each content_zh_paragraphs}}
+                <p>{{this}}</p>
+                {{/each}}
+            </div>
+            {{else if summary_zh}}
+            <div class="main-content">
+                {{#each summary_zh_paragraphs}}
+                <p>{{this}}</p>
+                {{/each}}
+            </div>
+            {{else if content}}
+            <div class="main-content">
+                {{#each content_paragraphs}}
+                <p>{{this}}</p>
+                {{/each}}
+            </div>
+            {{/if}}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="upvote-section">
+                <div class="upvote-button">
+                    <span class="upvote-icon">▲</span>
+                    <span>{{formatNumber ups}} 赞</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

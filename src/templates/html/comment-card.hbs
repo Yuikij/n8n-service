@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit Card - Comments</title>
+    <link rel="stylesheet" href="../css/base.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="card comment-card">
+        <!-- Header -->
+        <div class="header">
+            <div class="reddit-icon">R</div>
+            <div class="header-text">
+                <div class="header-title">Reddit 高赞讨论</div>
+                <div class="header-subtitle">精选评论</div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Original Post Reference -->
+            {{#if title}}
+            <div class="title-section">
+                <h2 class="title-chinese text-clamp-2">{{title}}</h2>
+            </div>
+            {{/if}}
+
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <h3 class="comments-title">热门评论</h3>
+                
+                {{#each comments}}
+                <div class="comment-card">
+                    <div class="comment-header">
+                        <div class="comment-avatar">
+                            {{substr author 0 1}}
+                        </div>
+                        <div class="comment-author-info">
+                            <div class="comment-author">{{author}}</div>
+                            <div class="comment-meta">
+                                <div class="upvote-count">
+                                    <span class="upvote-icon">▲</span>
+                                    <span>{{formatNumber ups}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {{#if body}}
+                    <div class="comment-content">{{body}}</div>
+                    {{/if}}
+                    
+                    {{#if body_zh}}
+                    <div class="comment-content-zh">{{body_zh}}</div>
+                    {{/if}}
+                </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="upvote-section">
+                <div class="upvote-button">
+                    <span class="upvote-icon">💬</span>
+                    <span>精选评论</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
