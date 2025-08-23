@@ -117,6 +117,7 @@ async function splitComment(comment) {
 
     let rem_zh = [...pars_zh];
     let rem_en = [...pars_en];
+    let isFirstChunk = true;
 
     while (rem_zh.length > 0 || rem_en.length > 0) {
         let low = 1;
@@ -127,7 +128,12 @@ async function splitComment(comment) {
             const mid = Math.ceil((low + high) / 2);
             const test_zh = rem_zh.slice(0, mid);
             const test_en = rem_en.slice(0, mid);
-            const testComment = { ...comment, body_zh: test_zh.join('\n'), body: test_en.join('\n') };
+            const testComment = { 
+                ...comment, 
+                body_zh: test_zh.join('\n'), 
+                body: test_en.join('\n'),
+                isContinuation: !isFirstChunk
+            };
             const html = await renderer.renderHTML('comment-card', { comments: [testComment] });
             const height = await measureContentHeight(html, `.comments-section`);
 
@@ -143,7 +149,14 @@ async function splitComment(comment) {
             bestFit = { zh: rem_zh.slice(0, 1), en: rem_en.slice(0, 1) };
         }
 
-        chunks.push({ ...comment, body_zh: bestFit.zh.join('\n'), body: bestFit.en.join('\n'), isContinuation: (chunks.length > 0) });
+        chunks.push({ 
+            ...comment, 
+            body_zh: bestFit.zh.join('\n'), 
+            body: bestFit.en.join('\n'), 
+            isContinuation: !isFirstChunk 
+        });
+        
+        isFirstChunk = false;
         rem_zh.splice(0, bestFit.zh.length);
         rem_en.splice(0, bestFit.en.length);
     }
@@ -191,6 +204,23 @@ async function paginateComments(post, pages) {
         if (bestFit.length === 0) {
             bestFit = commentQueue.slice(0, 1);
         }
+
+        // Check if the last comment is a continuation and if the next one is also a continuation of the same comment
+        if (bestFit.length > 0) {
+            const lastComment = bestFit[bestFit.length - 1];
+            const nextCommentIndex = bestFit.length;
+            if (lastComment.isContinuation && commentQueue[nextCommentIndex] && commentQueue[nextCommentIndex].isContinuation && commentQueue[nextCommentIndex].author === lastComment.author) {
+                const combinedComments = [...bestFit, commentQueue[nextCommentIndex]];
+                const pageData = { type: 'comments', comments: combinedComments, title: post.title_zh || post.title };
+                const html = await renderer.renderHTML('comment-card', pageData);
+                const height = await measureContentHeight(html, COMMENTS_SECTION_SELECTOR);
+
+                if (height <= MAX_HEIGHT_COMMENTS) {
+                    bestFit.push(commentQueue[nextCommentIndex]);
+                }
+            }
+        }
+
 
         pages.push({ type: 'comments', comments: bestFit, title: post.title_zh || post.title });
         commentQueue.splice(0, bestFit.length);

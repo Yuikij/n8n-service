@@ -42,10 +42,22 @@
                 <h3 class="comments-title">热门评论</h3>
                 
                 {{#each comments}}
+                {{#if isContinuation}}
+                <div class="comment-card comment-continuation">
+                    <div class="comment-content-zh">{{body_zh}}</div>
+                    {{#if body}}
+                    <div class="comment-content">{{body}}</div>
+                    {{/if}}
+                </div>
+                {{else}}
                 <div class="comment-card">
                     <div class="comment-header">
                         <div class="comment-avatar">
-                            {{substr author 0 1}}
+                            {{#if icon_img}}
+                                <img src="{{icon_img}}" alt="avatar">
+                            {{else}}
+                                {{substr author 0 1}}
+                            {{/if}}
                         </div>
                         <div class="comment-author-info">
                             <div class="comment-author">{{author}}</div>
@@ -57,15 +69,14 @@
                             </div>
                         </div>
                     </div>
-                    
-                    {{#if body}}
-                    <div class="comment-content">{{body}}</div>
-                    {{/if}}
-                    
                     {{#if body_zh}}
                     <div class="comment-content-zh">{{body_zh}}</div>
                     {{/if}}
+                    {{#if body}}
+                    <div class="comment-content">{{body}}</div>
+                    {{/if}}
                 </div>
+                {{/if}}
                 {{/each}}
             </div>
         </div>

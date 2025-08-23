@@ -290,6 +290,13 @@ body {
   box-shadow: 0 2px 8px rgba(0, 121, 211, 0.3);
 }
 
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
 .comment-author-info {
   flex: 1;
 }
@@ -440,4 +447,20 @@ body {
     box-shadow: none;
     border: 1px solid var(--border-light);
   }
+}
+.comment-continuation {
+    margin-top: -15px; /* Reduce margin to bring it closer to the previous comment */
+    border-top: none; /* Remove top border */
+    padding-top: 0;
+    margin-left: 25px; /* Indent to show it's a continuation */
+    border-left: 2px solid #e0e0e0; /* Add a subtle left border */
+    padding-left: 15px;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+}
+
+.comment-continuation .comment-content-zh,
+.comment-continuation .comment-content {
+    padding-top: 0;
 }
