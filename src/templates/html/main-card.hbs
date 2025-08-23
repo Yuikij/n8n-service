@@ -43,25 +43,23 @@
             </div>
 
             <!-- Main Content -->
-            {{#if content_zh}}
             <div class="main-content">
-                {{#each content_zh_paragraphs}}
-                <p>{{this}}</p>
-                {{/each}}
+                {{#if content_zh}}
+                <div class="content-block content-zh">
+                    {{#each content_zh_paragraphs}}
+                    <p>{{this}}</p>
+                    {{/each}}
+                </div>
+                {{/if}}
+                {{#if content}}
+                <div class="content-block content-en">
+                    <h4 class="original-text-title">原文</h4>
+                    {{#each content_paragraphs}}
+                    <p>{{this}}</p>
+                    {{/each}}
+                </div>
+                {{/if}}
             </div>
-            {{else if summary_zh}}
-            <div class="main-content">
-                {{#each summary_zh_paragraphs}}
-                <p>{{this}}</p>
-                {{/each}}
-            </div>
-            {{else if content}}
-            <div class="main-content">
-                {{#each content_paragraphs}}
-                <p>{{this}}</p>
-                {{/each}}
-            </div>
-            {{/if}}
         </div>
 
         <!-- Footer -->
@@ -72,6 +70,11 @@
                     <span>{{formatNumber ups}} 赞</span>
                 </div>
             </div>
+            {{#if totalPages}}
+            <div class="page-number">
+                {{pageNumber}} / {{totalPages}}
+            </div>
+            {{/if}}
         </div>
     </div>
 </body>

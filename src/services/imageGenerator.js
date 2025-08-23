@@ -7,7 +7,6 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const htmlRenderer = require('./htmlRenderer');
-const textUtils = require('../utils/textUtils');
 const fs = require('fs').promises;
 const { 
   ImageGenerationError, 
@@ -16,8 +15,8 @@ const {
   ErrorLogger 
 } = require('../utils/errorHandler');
 
-const { paginateContent } = textUtils;
 const { getRenderer } = htmlRenderer;
+const paginationService = require('./paginationService');
 
 /**
  * 生成Reddit帖子的卡片图片
@@ -35,24 +34,24 @@ async function generatePostCards(post, options = {}) {
       timestamp = Date.now()
     } = options;
     
-    // 分页处理 - 调整参数以适应更大的字体
-    const pages = paginateContent(post, {
-      maxContentPerPage: 600,  // 减少每页字符数以适应更大字体
-      maxCommentsPerPage: 2,   // 减少每页评论数以确保完整显示
-      minPages: 2,
-      maxPages: 4
-    });
-    
-    console.log(`📄 Content paginated into ${pages.length} pages`);
+    // 使用新的分页服务进行智能分页
+    console.log(`🧠 Performing smart pagination for post: ${post.id}`);
+    const pages = await paginationService.paginate(post);
+    console.log(`📄 Content paginated into ${pages.length} pages using smart measurement.`);
     
     // 生成图片
     const results = [];
+    const totalPages = pages.length;
     
     for (let i = 0; i < pages.length; i++) {
-      const pageData = pages[i];
+      const pageData = {
+        ...pages[i],
+        pageNumber: i + 1,
+        totalPages: totalPages
+      };
       const pageIndex = i + 1;
       
-      console.log(`🎨 Rendering page ${pageIndex}/${pages.length} (${pageData.type})`);
+      console.log(`🎨 Rendering page ${pageIndex}/${totalPages} (${pageData.type})`);
       
       try {
         // 确定模板类型
@@ -229,12 +228,12 @@ function preprocessPostData(post) {
   // 清理文本内容
   const cleanedPost = {
     ...post,
-    title: textUtils.cleanText(post.title),
-    selftext: textUtils.cleanText(post.selftext || ''),
-    title_zh: textUtils.cleanText(post.title_zh || ''),
-    title_polish_zh: textUtils.cleanText(post.title_polish_zh || ''),
-    selftext_zh: textUtils.cleanText(post.selftext_zh || ''),
-    summary_zh: textUtils.cleanText(post.summary_zh || '')
+    title: post.title,
+    selftext: post.selftext || '',
+    title_zh: post.title_zh || '',
+    title_polish_zh: post.title_polish_zh || '',
+    selftext_zh: post.selftext_zh || '',
+    summary_zh: post.summary_zh || ''
   };
   
   // 处理评论数据
@@ -243,8 +242,8 @@ function preprocessPostData(post) {
       .filter(comment => comment.body && comment.body.trim() !== '')
       .map(comment => ({
         ...comment,
-        body: textUtils.cleanText(comment.body),
-        body_zh: textUtils.cleanText(comment.body_zh || ''),
+        body: comment.body,
+        body_zh: comment.body_zh || '',
         author: comment.author.trim()
       }))
       .sort((a, b) => b.ups - a.ups); // 按点赞数排序

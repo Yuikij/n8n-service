@@ -78,6 +78,11 @@
                     <span>精选评论</span>
                 </div>
             </div>
+            {{#if totalPages}}
+            <div class="page-number">
+                {{pageNumber}} / {{totalPages}}
+            </div>
+            {{/if}}
         </div>
     </div>
 </body>

@@ -284,6 +284,236 @@ sudo systemctl edit reddit-card-service
 # 添加: Environment=NODE_OPTIONS=--max-old-space-size=2048
 ```
 
+### 无头服务器部署 (Ubuntu/Debian)
+
+在无图形化的Linux服务器上部署时，需要额外安装Chrome浏览器和相关依赖。
+
+#### 1. 安装系统依赖
+
+```bash
+# 更新包管理器
+sudo apt update
+
+# 安装Chrome所需的系统依赖
+sudo apt install -y \
+    ca-certificates \
+    fonts-liberation \
+    libappindicator3-1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgbm1 \
+    libgcc1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    lsb-release \
+    wget \
+    xdg-utils
+```
+
+#### 2. 安装Chrome浏览器
+
+**方法一：使用Puppeteer自带的Chrome（推荐）**
+
+```bash
+# 在项目目录中安装Chrome
+cd /opt/reddit-card-service
+sudo -u www-data npx puppeteer browsers install chrome
+
+# 或者全局安装
+sudo npx puppeteer browsers install chrome
+```
+
+**方法二：安装Chromium浏览器（轻量级选择）**
+
+```bash
+# 安装Chromium
+sudo apt update
+sudo apt install -y chromium-browser
+
+# 检查Chromium安装位置
+which chromium-browser
+# 通常位于 /usr/bin/chromium-browser
+
+# 如果apt版本有问题，可以使用snap版本
+sudo snap install chromium
+which chromium
+# snap版本通常位于 /snap/bin/chromium
+```
+
+**方法三：手动安装Google Chrome**
+
+```bash
+# 下载并安装Google Chrome
+wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+sudo apt update
+sudo apt install -y google-chrome-stable
+```
+
+#### 3. 配置Puppeteer启动参数
+
+编辑systemd服务文件，添加无头模式参数：
+
+```bash
+sudo systemctl edit reddit-card-service
+```
+
+添加以下环境变量：
+
+```ini
+[Service]
+Environment=PUPPETEER_ARGS=--no-sandbox,--disable-setuid-sandbox,--disable-dev-shm-usage,--disable-accelerated-2d-canvas,--no-first-run,--no-zygote,--disable-gpu
+Environment=PUPPETEER_HEADLESS=true
+
+# 如果使用Chromium，指定可执行文件路径
+Environment=PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+# 或者如果使用snap版本的Chromium
+# Environment=PUPPETEER_EXECUTABLE_PATH=/snap/bin/chromium
+
+# 如果使用Google Chrome
+# Environment=PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+```
+
+#### 4. 验证安装
+
+```bash
+# 重启服务
+sudo systemctl restart reddit-card-service
+
+# 检查服务状态
+sudo systemctl status reddit-card-service
+
+# 测试Chrome是否可用
+sudo -u www-data node -e "
+const puppeteer = require('puppeteer');
+(async () => {
+  try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    console.log('✅ Chrome启动成功');
+    await browser.close();
+  } catch (error) {
+    console.log('❌ Chrome启动失败:', error.message);
+  }
+})();
+"
+```
+
+#### 常见问题解决
+
+1. **浏览器找不到**
+```bash
+# 检查浏览器安装位置
+which google-chrome-stable    # Google Chrome
+which chromium-browser        # Chromium (apt版本)
+which chromium               # Chromium (snap版本)
+
+# 手动指定浏览器路径
+sudo systemctl edit reddit-card-service
+
+# 根据您安装的浏览器选择对应路径：
+# Chromium (apt):
+# Environment=PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Chromium (snap):
+# Environment=PUPPETEER_EXECUTABLE_PATH=/snap/bin/chromium
+
+# Google Chrome:
+# Environment=PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+```
+
+2. **权限问题**
+```bash
+# 确保www-data用户有权限访问浏览器
+# 对于Chromium (apt版本)
+sudo chmod +x /usr/bin/chromium-browser
+
+# 对于Google Chrome
+sudo chmod +x /usr/bin/google-chrome-stable
+
+# 对于snap版本的Chromium，通常权限已经正确设置
+# 确保应用程序目录权限正确
+sudo chown -R www-data:www-data /opt/reddit-card-service
+```
+
+3. **内存不足**
+```bash
+# 增加交换空间
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# 永久启用交换空间
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+4. **字体问题**
+```bash
+# 安装中文字体
+sudo apt install -y fonts-wqy-zenhei fonts-wqy-microhei
+
+# 刷新字体缓存
+sudo fc-cache -fv
+```
+
+#### Docker部署（可选）
+
+如果您使用Docker，可以使用预配置的基础镜像：
+
+```dockerfile
+FROM node:16-slim
+
+# 安装Chrome依赖
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+COPY src/ ./src/
+COPY public/ ./public/
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+
+EXPOSE 3000
+CMD ["node", "src/app.js"]
+```
+
 ## 📡 API接口
 
 ### POST /api/generate-cards

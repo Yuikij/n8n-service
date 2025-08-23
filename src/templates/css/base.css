@@ -208,6 +208,25 @@ body {
   margin-bottom: 0;
 }
 
+.content-block.content-en {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+.original-text-title {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: var(--space-md);
+}
+
+.content-en p {
+    font-size: var(--font-base);
+    line-height: var(--leading-normal);
+    color: var(--text-secondary);
+}
+
 /* Comments Section */
 .comments-section {
   flex: 1;
@@ -330,9 +349,15 @@ body {
   border-top: 2px solid var(--border-light);
   padding-top: var(--space-md);
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   margin-top: auto;
+}
+
+.page-number {
+    font-size: var(--font-base);
+    font-weight: 500;
+    color: var(--text-tertiary);
 }
 
 .upvote-section {
@@ -386,12 +411,12 @@ body {
 /* Responsive adjustments for different content lengths */
 .card.main-card .main-content {
   max-height: 800px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .card.comment-card .comments-section {
   max-height: 900px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Animation for a polished look */
