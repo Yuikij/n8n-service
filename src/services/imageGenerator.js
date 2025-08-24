@@ -66,7 +66,8 @@ async function generatePostCards(post, options = {}) {
             width: 900,
             height: 1200,
             deviceScaleFactor: 2,
-            quality: 90
+            quality: 90,
+            autoHeight: true  // 启用自动高度计算
           });
         }, 2, 500);
         

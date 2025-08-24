@@ -231,7 +231,8 @@ class HTMLRenderer {
       width = 750,
       height = 1000,
       deviceScaleFactor = 2,
-      quality = 90
+      quality = 90,
+      autoHeight = true  // 新增：自动计算高度
     } = options;
 
     let page = null;
@@ -240,10 +241,10 @@ class HTMLRenderer {
       const browser = await this.initBrowser();
       page = await browser.newPage();
 
-      // 设置视口
+      // 设置一个较大的初始视口，用于测量内容
       await page.setViewport({
         width,
-        height,
+        height: Math.max(height, 2000), // 确保有足够空间
         deviceScaleFactor
       });
 
@@ -265,6 +266,52 @@ class HTMLRenderer {
       // 等待字体加载
       await page.evaluateHandle('document.fonts.ready');
 
+      let actualHeight = height;
+      
+      if (autoHeight) {
+        // 测量实际内容高度
+        actualHeight = await page.evaluate(() => {
+          const body = document.body;
+          const card = document.querySelector('.card');
+          if (card && body) {
+            // 获取body的完整高度
+            const bodyRect = body.getBoundingClientRect();
+            const cardRect = card.getBoundingClientRect();
+            const cardScrollHeight = card.scrollHeight;
+            const cardOffsetHeight = card.offsetHeight;
+            
+            // 计算body的padding
+            const bodyStyle = window.getComputedStyle(body);
+            const bodyPaddingTop = parseFloat(bodyStyle.paddingTop) || 0;
+            const bodyPaddingBottom = parseFloat(bodyStyle.paddingBottom) || 0;
+            
+            // 计算实际需要的高度
+            const cardHeight = Math.max(cardRect.height, cardScrollHeight, cardOffsetHeight);
+            const totalHeight = cardHeight + bodyPaddingTop + bodyPaddingBottom;
+            
+            console.log('Card height measurements:', {
+              bodyHeight: bodyRect.height,
+              cardBoundingRect: cardRect.height,
+              cardScrollHeight,
+              cardOffsetHeight,
+              bodyPaddingTop,
+              bodyPaddingBottom,
+              calculatedTotal: totalHeight
+            });
+            
+            // 使用计算出的总高度，并添加一些安全边距
+            return totalHeight + 20;
+          }
+          return 1200; // 默认高度
+        });
+        
+        console.log(`🎯 Auto-calculated image height: ${actualHeight}`);
+        
+        // 限制最大高度以避免过大的图片
+        actualHeight = Math.min(actualHeight, 3000);
+        actualHeight = Math.max(actualHeight, 400); // 确保最小高度
+      }
+
       // 截图
       const screenshot = await page.screenshot({
         type: 'png',
@@ -273,7 +320,7 @@ class HTMLRenderer {
           x: 0,
           y: 0,
           width,
-          height
+          height: actualHeight
         },
         omitBackground: false
       });

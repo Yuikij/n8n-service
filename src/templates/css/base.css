@@ -87,7 +87,8 @@ body {
 /* Card Container */
 .card {
   width: 900px;
-  height: 1200px;
+  min-height: 1200px;  /* 改为最小高度，允许内容扩展 */
+  max-height: none;    /* 移除最大高度限制 */
   background: var(--bg-card);
   border-radius: var(--radius-xl);
   box-shadow: 
@@ -97,7 +98,7 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  overflow: visible;   /* 改为可见，允许内容溢出 */
 }
 
 .card::before {
@@ -417,12 +418,12 @@ body {
 
 /* Responsive adjustments for different content lengths */
 .card.main-card .main-content {
-  max-height: 800px;
+  max-height: none;     /* 移除最大高度限制 */
   overflow: visible;
 }
 
 .card.comment-card .comments-section {
-  max-height: 900px;
+  max-height: none;     /* 移除最大高度限制 */
   overflow: visible;
 }
 

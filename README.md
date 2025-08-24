@@ -65,30 +65,20 @@ sudo nano /etc/systemd/system/reddit-card-service.service
 ```ini
 [Unit]
 Description=Reddit Card Generator Service
-Documentation=https://github.com/your-username/n8n-service
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/opt/reddit-card-service
+WorkingDirectory=/home/shiori/n8n-service/n8n-service
 ExecStart=/usr/bin/node src/app.js
 Restart=always
 RestartSec=10
 Environment=NODE_ENV=production
 Environment=PORT=3000
 
-# 安全设置
-NoNewPrivileges=yes
-PrivateTmp=yes
-ProtectSystem=strict
-ProtectHome=yes
-ReadWritePaths=/opt/reddit-card-service/public/images
 
-# 资源限制
-LimitNOFILE=65536
-LimitNPROC=4096
 
 # 日志设置
 StandardOutput=journal
